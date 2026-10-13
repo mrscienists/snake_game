@@ -1,0 +1,128 @@
+.button{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.colorful{
+    color: var(--text-color, #FFFFFF);
+}
+
+body {
+    background-image: url("../img/endless_bg.png");
+    background-repeat: repeat;
+    background-color: #ffffff;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: url("../img/endless_bg.png");
+    background-repeat: repeat;
+    filter: blur(3px);
+    transform: scale(1.1);
+}
+
+h1 {
+    text-align: center;
+    font-size: 50px;
+    font-family: Arial;
+    color: #ff9d00
+}
+
+h2{
+    text-align: left;
+    font-size: 30px;
+    font-family: Arial;
+    color: #ff9d00 
+}
+
+span {
+    background-color: #00000057;
+    backdrop-filter: blur(6px);
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 10px;
+}
+
+a{
+    background-color: #00000057;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-radius: 10px;
+    border-color: #00000057;
+    color: #ff9d00;
+    font-family: Arial;
+    font-size: 24px;
+}
+
+hr{
+    border: none;
+    background-color: #ff9d00;
+    height: 5px;
+    width: 50%;
+}
+
+p{
+    padding: 5px;
+    text-align: left;
+    font-size: 25px;
+    font-family: Arial;
+    color: #ff9d00;
+    backdrop-filter: blur(4px);
+    background-color: #00000057;
+    border-radius: 10px;
+}
+
+.player-result{
+    display: flex;
+    margin-left: 10%;
+    margin-right: 10%;
+    margin-bottom: 5px;
+    padding-left: 5%;
+    padding-right: 5%;
+    border-radius: 10px;
+    background-color: #00000057;
+    font-family: Arial;
+    font-style: italic;
+    font-size: 30px;
+    justify-content: space-between
+}
+
+.nickname{
+    color: #ff9d00;
+    text-align: center;
+}
+
+.score{
+    color: #ff5607;
+}
+
+.player-result .place{
+    color: #ff3a3a;
+}
+
+.player-result:is(
+    [data-place = "6"], [data-place = "7"], 
+    [data-place = "8"], [data-place = "9"], 
+    [data-place ^= "1"], 
+    [data-place ^= "2"], [data-place^= "3"], 
+    [data-place ^= "4"], [data-place = "50"]
+) .place{
+    color: #f2ff00;
+}
+
+
+.player-result:is(
+    [data-place = "1"], [data-place = "2"], 
+    [data-place = "3"], [data-place = "4"], 
+    [data-place = "5"]
+) .place{
+    color: #00ff6e;
+}

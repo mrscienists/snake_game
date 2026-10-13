@@ -13,6 +13,4 @@ while running:
         if event.type == p.QUIT:
             running = False   
 
-
-
 p.quit()
