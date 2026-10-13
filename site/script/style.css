@@ -39,7 +39,7 @@ h2{
     color: #ff9d00 
 }
 
-span {
+.blackBg {
     background-color: #00000057;
     backdrop-filter: blur(6px);
     padding-left: 10px;
@@ -81,7 +81,8 @@ p{
 }
 
 .player-result{
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 10fr 1fr;
     margin-left: 10%;
     margin-right: 10%;
     margin-bottom: 5px;
@@ -90,7 +91,6 @@ p{
     border-radius: 10px;
     background-color: #00000057;
     font-family: Arial;
-    font-style: italic;
     font-size: 30px;
     justify-content: space-between
 }
