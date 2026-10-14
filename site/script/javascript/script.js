@@ -2,7 +2,7 @@ function leaderboards(){
     let data = {};
 
     
-    for(let i = 0; i < 100; i++){
+    for(let i = 0; i <= 1000; i++){
         data[`bot${i}`] = i * 100
     }
     
