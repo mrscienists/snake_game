@@ -2,7 +2,7 @@ import pygame as p
 import pygame_widgets as pw
 from pygame_widgets.button import Button
 
-CELL_SIZE = 32  # размер одной клетки поля в пикселях
+CELL_SIZE = 32
 
 class Snake:
     DIRECTION_OFFSETS = {"R": (0, 1), "L": (0, -1), "U": (-1, 0), "D": (1, 0)}
@@ -13,11 +13,12 @@ class Snake:
         sprite_paths = {"def": "game/sprites/snake/default.png",
                         "end": "game/sprites/snake/special/end.png",
                         "head": "game/sprites/snake/special/head.png",
-                        "t_head_l": "game/sprites/snake/special/turn_head/turn_head_left.png",
-                        "t_head_r": "game/sprites/snake/special/turn_head/turn_head_right.png",
                         "t_end_l": "game/sprites/snake/special/turn_end/turn_end_left.png",
                         "t_end_r": "game/sprites/snake/special/turn_end/turn_end_right.png",
-                        "turn": "game/sprites/snake/turn.png"}
+                        "turn": "game/sprites/snake/turn.png",
+                        "r_apple": "game/sprites/apples/apple_red.png",
+                        "b_apple": "game/sprites/apples/apple_blue.png",
+                        "p_apple": "game/sprites/apples/apple_pink.png"}
 
         loaded_sprites = {}
 
@@ -33,6 +34,7 @@ class Snake:
         self.field[self.head_y][self.head_x] = "HU"
         self.field[self.head_y + 1][self.head_x] = "DU"
         self.field[self.head_y + 2][self.head_x] = "EU"
+        self.field[10][10] = "A"
 
     def draw(self):
         pixel_y = 0
@@ -149,7 +151,7 @@ class Snake:
                                 case "R":
                                     match turn_to:
                                         case "U":
-                                            self.screen.blit(self.sprites["t_end_l"], position)
+                                            self.screen.blit(p.transform.rotate(self.sprites["t_end_l"], 180), position)
                                         case "D":
                                             self.screen.blit(self.sprites["t_end_r"], position)
 
@@ -158,28 +160,29 @@ class Snake:
                                         case "L":
                                             self.screen.blit(p.transform.rotate(self.sprites["t_end_r"], 270), position)
                                         case "R":
-                                            self.screen.blit(p.transform.rotate(self.sprites["t_end_l"], 270), position)
+                                            self.screen.blit(p.transform.rotate(self.sprites["t_end_l"], 90), position)
 
                                 case "L":
                                     match turn_to:
                                         case "U":
                                             self.screen.blit(p.transform.rotate(self.sprites["t_end_r"], 180), position)
                                         case "D":
-                                            self.screen.blit(p.transform.rotate(self.sprites["t_end_l"], 180), position)
+                                            self.screen.blit(self.sprites["t_end_l"], position)
 
                                 case "U":
                                     match turn_to:
                                         case "L":
-                                            self.screen.blit(p.transform.rotate(self.sprites["t_end_l"], 90), position)
+                                            self.screen.blit(p.transform.rotate(self.sprites["t_end_l"], 270), position)
                                         case "R":
                                             self.screen.blit(p.transform.rotate(self.sprites["t_end_r"], 90), position)
+                
+                    case "A":
+                        self.screen.blit(self.sprites["r_apple"], position)
+
                 pixel_x += CELL_SIZE
             pixel_y += CELL_SIZE
 
     def move(self, direction: str):
-        for i in self.field:
-            print(i)
-
         match direction:
             case "right":
                 self.__go_right__()
@@ -200,28 +203,28 @@ class Snake:
                 case "H":
                     facing = self.field[y][x][1]
 
-                    if facing == "L":                    # на 180° разворачиваться нельзя
+                    if facing == "L":
                         return False
 
-                    if x + 1 >= len(self.field[0]):      # crushed into wall
+                    if x + 1 >= len(self.field[0]):
                         return True
                     elif self.field[y][x + 1] != "N" and \
-                            self.field[y][x + 1][0] != "A":   # crushed into itself
+                            self.field[y][x + 1][0] != "A":
                         return True
 
                     grow = self.field[y][x + 1][0] == "A"
 
-                    if facing != "R":                    # e.c.: HU -> старая голова становится поворотом "TUR"
+                    if facing != "R":
                         self.field[y][x] = f"T{facing}R"
                     else:
                         self.field[y][x] = "DR"
-                    self.field[y][x + 1] = "HR"          # новая голова
+                    self.field[y][x + 1] = "HR"
 
-                    if grow:                             # хвост остаётся на месте
+                    if grow:
                         self.length += 1
                         break
 
-                    match facing:                        # шаг назад по телу
+                    match facing:
                         case "R":
                             x -= 1
                         case "U":
@@ -229,7 +232,7 @@ class Snake:
                         case "D":
                             y -= 1
 
-                case "D" | "T":                          # у T первая буква - откуда пришла змейка
+                case "D" | "T":
                     match self.field[y][x][1]:
                         case "R":
                             x -= 1
@@ -241,31 +244,203 @@ class Snake:
                             y -= 1
 
                 case "E":
-                    # последняя буква хвоста - куда идёт следующий сегмент: "ER" -> R, "EUR" -> R
                     step_y, step_x = self.DIRECTION_OFFSETS[self.field[y][x][-1]]
                     next_y, next_x = y + step_y, x + step_x
 
-                    self.field[y][x] = "N"               # старый хвост стирается
-                    self.field[next_y][next_x] = "E" + self.field[next_y][next_x][1:]   # следующий сегмент -> хвост
+                    self.field[y][x] = "N"
+                    self.field[next_y][next_x] = "E" + self.field[next_y][next_x][1:]
                     break
 
         self.head_x += 1
         return False
 
     def __go_up__(self) -> bool:
-        return True
+        """Movement method. Returns True, if snake crushed"""
+        x, y = self.head_x, self.head_y
+        grow = False
+
+        while True:
+            match self.field[y][x][0]:
+                case "H":
+                    facing = self.field[y][x][1]
+
+                    if facing == "D":                    # на 180° разворачиваться нельзя
+                        return False
+
+                    if y - 1 < 0:                        # crushed into wall
+                        return True
+                    elif self.field[y - 1][x] != "N" and \
+                            self.field[y - 1][x][0] != "A":   # crushed into itself
+                        return True
+
+                    grow = self.field[y - 1][x][0] == "A"
+
+                    if facing != "U":                    # e.c.: HR -> "TRU"
+                        self.field[y][x] = f"T{facing}U"
+                    else:
+                        self.field[y][x] = "DU"
+                    self.field[y - 1][x] = "HU"          # новая голова
+
+                    if grow:
+                        self.length += 1
+                        break
+
+                    match facing:                        # шаг назад по телу
+                        case "R":
+                            x -= 1
+                        case "L":
+                            x += 1
+                        case "U":
+                            y += 1
+
+                case "D" | "T":
+                    match self.field[y][x][1]:
+                        case "R":
+                            x -= 1
+                        case "L":
+                            x += 1
+                        case "U":
+                            y += 1
+                        case "D":
+                            y -= 1
+
+                case "E":
+                    step_y, step_x = self.DIRECTION_OFFSETS[self.field[y][x][-1]]
+                    next_y, next_x = y + step_y, x + step_x
+
+                    self.field[y][x] = "N"
+                    self.field[next_y][next_x] = "E" + self.field[next_y][next_x][1:]
+                    break
+
+        self.head_y -= 1
+        return False
 
     def __go_left__(self) -> bool:
-        return True
+        """Movement method. Returns True, if snake crushed"""
+        x, y = self.head_x, self.head_y
+        grow = False
+
+        while True:
+            match self.field[y][x][0]:
+                case "H":
+                    facing = self.field[y][x][1]
+
+                    if facing == "R":
+                        return False
+
+                    if x - 1 < 0:
+                        return True
+                    elif self.field[y][x - 1] != "N" and \
+                            self.field[y][x - 1][0] != "A":
+                        return True
+
+                    grow = self.field[y][x - 1][0] == "A"
+
+                    if facing != "L":
+                        self.field[y][x] = f"T{facing}L"
+                    else:
+                        self.field[y][x] = "DL"
+                    self.field[y][x - 1] = "HL"
+
+                    if grow:
+                        self.length += 1
+                        break
+
+                    match facing:
+                        case "L":
+                            x += 1
+                        case "U":
+                            y += 1
+                        case "D":
+                            y -= 1
+
+                case "D" | "T":
+                    match self.field[y][x][1]:
+                        case "R":
+                            x -= 1
+                        case "L":
+                            x += 1
+                        case "U":
+                            y += 1
+                        case "D":
+                            y -= 1
+
+                case "E":
+                    step_y, step_x = self.DIRECTION_OFFSETS[self.field[y][x][-1]]
+                    next_y, next_x = y + step_y, x + step_x
+
+                    self.field[y][x] = "N"
+                    self.field[next_y][next_x] = "E" + self.field[next_y][next_x][1:]
+                    break
+
+        self.head_x -= 1
+        return False
 
     def __go_down__(self) -> bool:
-        return True
+        """Movement method. Returns True, if snake crushed"""
+        x, y = self.head_x, self.head_y
+        grow = False
+
+        while True:
+            match self.field[y][x][0]:
+                case "H":
+                    facing = self.field[y][x][1]
+
+                    if facing == "U":
+                        return False
+
+                    if y + 1 >= len(self.field):
+                        return True
+                    elif self.field[y + 1][x] != "N" and \
+                            self.field[y + 1][x][0] != "A":
+                        return True
+
+                    grow = self.field[y + 1][x][0] == "A"
+
+                    if facing != "D":
+                        self.field[y][x] = f"T{facing}D"
+                    else:
+                        self.field[y][x] = "DD"
+                    self.field[y + 1][x] = "HD"
+
+                    if grow:
+                        self.length += 1
+                        break
+
+                    match facing:
+                        case "R":
+                            x -= 1
+                        case "L":
+                            x += 1
+                        case "D":
+                            y -= 1
+
+                case "D" | "T":
+                    match self.field[y][x][1]:
+                        case "R":
+                            x -= 1
+                        case "L":
+                            x += 1
+                        case "U":
+                            y += 1
+                        case "D":
+                            y -= 1
+
+                case "E":
+                    step_y, step_x = self.DIRECTION_OFFSETS[self.field[y][x][-1]]
+                    next_y, next_x = y + step_y, x + step_x
+
+                    self.field[y][x] = "N"
+                    self.field[next_y][next_x] = "E" + self.field[next_y][next_x][1:]
+                    break
+
+        self.head_y += 1
+        return False
 
 def start():
     global game_stage
     start_button.hide()
     game_stage += 1
-
 
 def fill_bg(image: p.Surface, screen: p.Surface):
     for x in range(0, WIDTH, 64):
