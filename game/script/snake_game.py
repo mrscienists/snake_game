@@ -21,9 +21,8 @@ class Snake:
         self.cordy = len(field) // 2 - 1
         print(len(field), self.cordy)
         self.field = field
-        self.field[self.cordy][self.cordx] = "HL"
-        self.field[self.cordy][self.cordx - 1] = "TUL"
-        self.field[self.cordy][self.cordx - 2] = "EL"
+        self.field[self.cordy][self.cordx] = "HR"
+        self.field[self.cordy][self.cordx - 1] = "ER"
 
 
     def draw(self):
@@ -55,7 +54,7 @@ class Snake:
 
                                 match cell[2]:
                                     case "U":
-                                        screen.blit(p.transform.rotate(self.sprites["turn"], 90), (x, y))
+                                        screen.blit(p.transform.rotate(self.sprites["turn"], 270), (x, y))
                                     case "D":
                                         screen.blit(self.sprites["turn"], (x, y))
 
@@ -64,23 +63,23 @@ class Snake:
                                     case "U":
                                         screen.blit(p.transform.rotate(self.sprites["turn"], 180), (x, y))
                                     case "D":
-                                        screen.blit(p.transform.rotate(self.sprites["turn"], 270), (x, y))
+                                        screen.blit(p.transform.rotate(self.sprites["turn"], 90), (x, y))
 
                             
                             case "U":
                                 match cell[2]:
                                     case "R":
-                                        screen.blit(p.transform.rotate(self.sprites["turn"], 180), (x, y))
-                                    case "L":
                                         screen.blit(p.transform.rotate(self.sprites["turn"], 90), (x, y))
+                                    case "L":
+                                        screen.blit(self.sprites["turn"], (x, y))
 
                             
                             case "D":
                                 match cell[2]:
                                     case "R":
-                                        screen.blit(p.transform.rotate(self.sprites["turn"], 270), (x, y))
+                                        screen.blit(p.transform.rotate(self.sprites["turn"], 180), (x, y))
                                     case "L":
-                                        screen.blit(self.sprites["turn"], (x, y))
+                                        screen.blit(p.transform.rotate(self.sprites["turn"], 270), (x, y))
 
                     case "H":
                         match cell[1]:
@@ -116,8 +115,7 @@ class Snake:
                 self.__go_right__()
 
     def __go_right__(self):
-
-
+        pass
 
 def start():
     global screen, button, level
