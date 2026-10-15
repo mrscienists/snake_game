@@ -40,6 +40,8 @@ class Snake:
         self.field[len(self.field)//2 - 1][len(self.field[0])//2 - 1] = "AR"
 
     def draw(self):
+        for i in self.field:
+            print(*i)
         """Drawing method. Draws snake and apples"""
         pixel_y = 0
         for row_cells in self.field:
@@ -248,9 +250,11 @@ class Snake:
                         return {"happened": "crushed", "eaten": eaten}
                     elif self.field[y][x + 1] != "N" and \
                             self.field[y][x + 1][0] != "A":
-                        return {"happened": "nothing", "eaten": eaten}
+                        return {"happened": "crushed", "eaten": eaten}
 
                     grow = self.field[y][x + 1][0] == "A"
+                    if grow:
+                        apple_type = self.field[y][x + 1][1]
 
                     if facing != "R":
                         self.field[y][x] = f"T{facing}R"
@@ -259,8 +263,7 @@ class Snake:
                     self.field[y][x + 1] = "HR"
 
                     if grow:
-                        print(self.field[y][x][1])
-                        match self.field[y][x][1]:
+                        match apple_type:
                             case "P":
                                 eaten = "pink"
                             case "B":
@@ -326,15 +329,17 @@ class Snake:
                         return {"happened": "crushed", "eaten": eaten}
 
                     grow = self.field[y - 1][x][0] == "A"
-
+                    if grow:
+                        apple_type = self.field[y - 1][x][1]
+                    
                     if facing != "U":
                         self.field[y][x] = f"T{facing}U"
                     else:
                         self.field[y][x] = "DU"
                     self.field[y - 1][x] = "HU"
-
+                    
                     if grow:
-                        match self.field[y][x][1]:
+                        match apple_type:
                             case "P":
                                 eaten = "pink"
                             case "B":
@@ -400,6 +405,8 @@ class Snake:
                         return {"happened": "crushed", "eaten": eaten}
 
                     grow = self.field[y][x - 1][0] == "A"
+                    if grow:
+                        apple_type = self.field[y][x - 1][1]
 
                     if facing != "L":
                         self.field[y][x] = f"T{facing}L"
@@ -408,7 +415,7 @@ class Snake:
                     self.field[y][x - 1] = "HL"
 
                     if grow:
-                        match self.field[y][x][1]:
+                        match apple_type:
                             case "P":
                                 eaten = "pink"
                             case "B":
@@ -470,10 +477,12 @@ class Snake:
                     if y + 1 >= len(self.field):
                         return {"happened": "crushed", "eaten": eaten}
                     elif self.field[y + 1][x] != "N" and \
-                            self.field[y + 1][x][0] != "A":
+                         self.field[y + 1][x][0] != "A":
                         return {"happened": "crushed", "eaten": eaten}
 
                     grow = self.field[y + 1][x][0] == "A"
+                    if grow:
+                        apple_type = self.field[y + 1][x][1]
 
                     if facing != "D":
                         self.field[y][x] = f"T{facing}D"
@@ -482,7 +491,7 @@ class Snake:
                     self.field[y + 1][x] = "HD"
 
                     if grow:
-                        match self.field[y][x][1]:
+                        match apple_type:
                             case "P":
                                 eaten = "pink"
                             case "B":

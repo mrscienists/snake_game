@@ -9,7 +9,7 @@ import settings as st
 def start():
     global game_stage
     start_button.hide()
-    game_stage += 1
+    game_stage = "game"
 
 def fill_bg(image: p.Surface, screen: p.Surface):
     for x in range(0, st.WIDTH, 64):
@@ -19,12 +19,12 @@ def fill_bg(image: p.Surface, screen: p.Surface):
 # pygame setup
 game_field = []
 p.init()
-screen = p.display.set_mode((st.WIDTH, st.HEIGHT))
+side_width = 100
+screen = p.display.set_mode((st.WIDTH + side_width, st.HEIGHT))
 
 for _ in range(0, st.WIDTH, st.WIDTH // (st.CELL_AMOUNT * 2)):
     game_field.append(["N"] * (st.HEIGHT // st.CELL_SIZE))
 snake = Snake(game_field, screen, st.CELL_SIZE)
-
 
 start_btt_width = 300
 start_btt_height = 150
@@ -53,7 +53,6 @@ start_button = Button(
 #)
 
 clock = p.time.Clock()
-game_stage = 0
 background_image = p.image.load("game/sprites/endless_bg.png").convert()
 
 running = True
@@ -61,13 +60,15 @@ crushed = False
 win = False
 last_move = 0
 score = 0
+
+game_stage = "start"
 while running:
     events = p.event.get()
     for event in events:
         if event.type == p.QUIT:
             running = False
 
-        if game_stage == 1:
+        if game_stage == "game":
             if event.type == p.KEYDOWN:
                 match event.key:
                     case p.K_w:
@@ -79,8 +80,8 @@ while running:
                     case p.K_d:
                         move_to = "right"
 
-    if game_stage == 1:
-        snake.create_apple(400)
+    if game_stage == "game":
+        snake.create_apple(2)
 
         try:
             if game_stage == 1:
@@ -100,39 +101,42 @@ while running:
                 case "pink":
                     score += 10
 
-            print(score, "eaten:", movement_result["eaten"])
-
-            movement_result["happened"]
             match movement_result["happened"]:
                 case "win":
-                    print(score)
                     win = True
 
                 case "crushed":
-                    print(score)
                     crushed = True
 
             movement_result = {}
         except:
             pass
 
-    if win:
-        print("YOU WON")
-        text_color = (255, 255, 255)
-        font = p.font.SysFont("Arial", 36)
-        text_surface = font.render(f"{score}", True, text_color)
-        game_stage += 1
+    if win: game_stage = "win"
+    elif crushed: game_stage = "lose"
 
-    elif crushed:
-        text_color = (255, 255, 255)
-        font = p.font.SysFont("Arial", 36)
-        text_surface = font.render(f"{score}", True, text_color)
-        screen.blit(text_surface, text_surface.get_rect(center=(400, 30)))
-        game_stage += 2
-
+    screen.fill("#007D06")
     fill_bg(background_image, screen)
-    if game_stage == 1:
-        snake.draw()
+
+    if game_stage == "game" :snake.draw()
+    
+    text_color = (255, 255, 255)
+
+    txt_score_font_size = 36
+    txt_score_font = p.font.SysFont("Arial", txt_score_font_size)
+    txt_score_text_surface = txt_score_font.render(f"Score:", True, text_color)            
+    screen.blit(txt_score_text_surface, 
+                txt_score_text_surface.get_rect(center=(st.WIDTH + side_width // 2, 
+                                                txt_score_font_size//2)))
+
+    score_font_size = 36
+    score_font = p.font.SysFont("Arial", score_font_size)
+    score_text_surface = score_font.render(f"{score}", True, text_color)            
+    screen.blit(score_text_surface, 
+                score_text_surface.get_rect(center=(st.WIDTH + side_width // 2, 
+                                              score_font_size//2 + txt_score_font_size)))
+
+    if game_stage == 3: pass
     
     pw.update(events)
     p.display.update()
