@@ -1,13 +1,17 @@
 import pygame as p
 import pygame_widgets as pw
 from pygame_widgets.button import Button
+from pygame_widgets.textbox import TextBox
 from typing import Literal
-import random
 from snake import Snake
 import settings as st
+import data_writer as dw
+import threading as t
 
-def reset_values():
-    global snake, move_to, movement_result, score, running, crushed, win, last_move, game_field
+def reset_values() -> None:
+    """Resets all game values to restart the game normally"""
+    global snake, move_to, movement_result, score, \
+    running, crushed, win, last_move, game_field, written
 
     try: del snake
     except: pass
@@ -23,12 +27,15 @@ def reset_values():
 
     score = 0
     running = True
+    written = False
     crushed = False
     win = False
     last_move = 0
 
-def start():
-    global game_stage, snake
+def start() -> None:
+    """Starts the game, by changing game_stage value to "game" and registrates player name """
+    global game_stage, snake, player_name
+    player_name = name_box.getText().strip()[:max_name_length] or "Player"
     start_button.hide()
     restart_button.hide()
     game_stage = "game"
@@ -37,26 +44,30 @@ def start():
     for _ in range(0, st.WIDTH, st.WIDTH // (st.CELL_AMOUNT * 2)):
         game_field.append(["N"] * (st.HEIGHT // st.CELL_SIZE))
 
-    reset_values()
-
     snake = Snake(game_field, screen, st.CELL_SIZE)
 
-def restart():
+def restart() -> None:
+    """Restarts game, by changing game_stage value to "start" """
     global game_stage
     game_stage = "start"
     restart_button.hide()
     exit_button.hide()
+    name_box.show()
+    reset_values()
 
-def fill_bg(image: p.Surface, screen: p.Surface):
+def fill_bg(image: p.Surface, screen: p.Surface) -> None:
+    """Endless fills the background with image"""
     for x in range(0, st.WIDTH, 64):
         for y in range(0, st.HEIGHT, 64):
             screen.blit(image, (x, y))
 
-def break_loop():
+def break_loop() -> None:
+    """Closes window, by changing running to False"""
     global running
     running = False
 
-def change_difficult(difficult: Literal["easy", "medium", "hard"]):
+def change_difficult(difficult: Literal["easy", "medium", "hard"]) -> None:
+    """Determines game difficulty and reward for chosen difficulty"""
     global difficulty_speed_coeff, difficulty_score_coeff
 
     match difficult:
@@ -74,9 +85,10 @@ def change_difficult(difficult: Literal["easy", "medium", "hard"]):
 
 def make_difficulty_button(text: str, difficult: Literal["easy", "medium", "hard"],
                            inactive: str, hover: str, pressed: str) -> Button:
+    """Creates difficulty buttons"""
     button = Button(
         screen,
-        0, 0,  # позиция выставляется в главном цикле
+        0, 0,
         hardness_btt_width,
         hardness_btt_height,
 
@@ -94,9 +106,17 @@ def make_difficulty_button(text: str, difficult: Literal["easy", "medium", "hard
     return button
 
 # pygame setup
+
 p.init()
 side_width = 100
 screen = p.display.set_mode((st.WIDTH + side_width, st.HEIGHT))
+
+try:
+    icon = p.image.load("game/sprites/snake.png")
+    p.display.set_icon(icon)
+except p.error:
+    pass
+p.display.set_caption("Snake & apple")
 
 btt_width = 170
 btt_height = 40
@@ -125,23 +145,23 @@ start_button = Button(
 start_button.hide()
 
 restart_button = Button(
-            # Mandatory Parameters
-            screen,  # Surface to place button on
-            (st.WIDTH - btt_width) // 2,  # X-coordinate of top left corner
-            (st.HEIGHT - btt_height) // 2,  # Y-coordinate of top left corner
-            btt_width,  # Width
-            btt_height,  # Height
-
-            # Optional Parameters
-            text="Restart game",  # Text to display
-            fontSize=btt_font_size,  # Size of font
-            margin=20,  # Minimum distance between text/image and edge of button
-            inactiveColour=btt_inactive_colour,  # Colour of button when not being interacted with
-            hoverColour=btt_hover_colour,  # Colour of button when being hovered over
-            pressedColour=btt_pressed_color,  # Colour of button when being clicked
-            radius=20,  # Radius of border corners (leave empty for not curved)
-            onClick=restart # Function to call when clicked on
-        )
+    # Mandatory Parameters
+    screen,  # Surface to place button on
+    (st.WIDTH - btt_width) // 2,  # X-coordinate of top left corner
+    (st.HEIGHT - btt_height) // 2,  # Y-coordinate of top left corner
+    btt_width,  # Width
+    btt_height,  # Height
+    
+    # Optional Parameters
+    text="Restart game",  # Text to display
+    fontSize=btt_font_size,  # Size of font
+    margin=20,  # Minimum distance between text/image and edge of button
+    inactiveColour=btt_inactive_colour,  # Colour of button when not being interacted with
+    hoverColour=btt_hover_colour,  # Colour of button when being hovered over
+    pressedColour=btt_pressed_color,  # Colour of button when being clicked
+    radius=20,  # Radius of border corners (leave empty for not curved)
+    onClick=restart # Function to call when clicked on
+)
 restart_button.hide()
 
 exit_button = Button(
@@ -175,8 +195,30 @@ hard_btt = make_difficulty_button("Hard mode", "hard",
                                   "#FD2828", "#A90000", "#7F0000")
 
 difficulty_buttons = [easy_btt, medium_btt, hard_btt]
-clock = p.time.Clock()
 
+difficulty_score_coeff = st.EASY_MODE_SCORE_MULT
+difficulty_speed_coeff = st.EASY_MODE_SPEED_MULT
+
+name_box_width = 400
+name_box_height = 50
+max_name_length = 50
+player_name = "Player"
+
+name_box = TextBox(
+       screen,
+       0, 0,
+       name_box_width,
+       name_box_height,
+       fontSize=28,
+       colour="#FFFFFF",
+       textColour="#FF0000",
+       borderColour="#FF8000",
+       radius=10,
+       borderThickness=3
+   )
+
+clock = p.time.Clock()
+written = False
 running = True
 crushed = False
 win = False
@@ -210,16 +252,28 @@ while running:
     if game_stage == "start":
         name_size = 50
         placement_of_name = (st.WIDTH // 2, 
-                             (st.HEIGHT - name_size) // 2)
+                             (st.HEIGHT - name_size - name_box_height - 
+                              (btt_height + gap_between_btt) * 6) // 2)
 
         name_font = p.font.SysFont("Arial", name_size)
         name_text_surface = name_font.render(f"Snake & apple!", True, text_color)
         screen.blit(name_text_surface,
         name_text_surface.get_rect(center=placement_of_name))
 
+        name_box_x = (st.WIDTH - name_box_width) // 2
+        name_box_y = placement_of_name[1] + 60
+
+        label_font = p.font.SysFont("Arial", 24)
+        label_surface = label_font.render("Your name:", True, text_color)
+        screen.blit(label_surface,
+                    label_surface.get_rect(center=(placement_of_name[0], name_box_y - 14)))
+
+        name_box._x = name_box_x
+        name_box._y = name_box_y
+
         start_button.show()
         start_button._x = placement_of_name[0] - btt_width // 2
-        start_button._y = placement_of_name[1] + btt_height
+        start_button._y = name_box_y + name_box_height + gap_between_btt
 
         for i, button in enumerate(difficulty_buttons, start=1):
             button.show()
@@ -354,13 +408,20 @@ while running:
         exit_button._y = buttons_y + btt_height + gap_between_btt
 
     if game_stage != "start":
+        name_box.hide()
         for button in difficulty_buttons:
             button.hide()
 
-    elif game_stage == "win" or game_stage == "lose":
-        pass #write_data(nickname, score)
+    if (game_stage == "win" or game_stage == "lose") and not written:
+        t.Thread(target=lambda: dw.write_data("http://localhost:8000/save_score", player_name, score), daemon = True).start()
+        written = True
 
+    clock.tick(240)
     pw.update(events)
+
+    if game_stage == "start":
+        name_box.draw()
+
     p.display.update()
 
 p.quit()

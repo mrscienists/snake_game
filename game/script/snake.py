@@ -3,6 +3,16 @@ from typing import Literal
 import random
 
 class Snake:
+    """
+    Class for drawing/controlling snake and spawning random apples on the field\n
+    Snake(game_field, screen, cell_size):\n
+    \tgame_field - matrix, where snake must move\n
+    \tscreen - pygame.Surface, where snake will be rendered\n
+    \tcell_size - 1 cell size in pixel. Needs to correctly draw snake\n
+    Snake.draw() - Draws snake and apples on the field with sprites\n
+    Snake.move(direction) - Moves snake on the field in chosen direction\n
+    Snake.create_apple(num_of_apples) - creates apples on field. num_of_apples shows how many apples need to spawn (if possible)
+    """
     DIRECTION_OFFSETS = {"R": (0, 1), "L": (0, -1), "U": (-1, 0), "D": (1, 0)}
     head_x = 3
     length = 1
@@ -37,7 +47,6 @@ class Snake:
         self.field[self.head_y][self.head_x] = "HR"
         self.field[self.head_y][self.head_x - 1] = "DR"
         self.field[self.head_y][self.head_x - 2] = "ER"
-        self.field[len(self.field)//2 - 1][len(self.field[0])//2 - 1] = "AR"
 
     def draw(self):
         """Drawing method. Draws snake and apples"""
