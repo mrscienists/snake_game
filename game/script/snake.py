@@ -40,8 +40,6 @@ class Snake:
         self.field[len(self.field)//2 - 1][len(self.field[0])//2 - 1] = "AR"
 
     def draw(self):
-        for i in self.field:
-            print(*i)
         """Drawing method. Draws snake and apples"""
         pixel_y = 0
         for row_cells in self.field:
