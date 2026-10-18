@@ -281,7 +281,7 @@ while running:
             button._y = start_button._y + (btt_height + gap_between_btt) * i
 
     elif game_stage == "game":
-        snake.create_apple(400)
+        snake.create_apple(2)
         try:
             if game_stage == "game":
                 now = p.time.get_ticks()
