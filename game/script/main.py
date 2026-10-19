@@ -105,8 +105,14 @@ def make_difficulty_button(text: str, difficult: Literal["easy", "medium", "hard
     button.hide()
     return button
 
-# pygame setup
+def write_data():
+    try:
+        dw.write_data("http://localhost:8000/save_score", player_name, score)
 
+    except:
+        print("Server is not avaible, try to check your internet connection!")
+
+# pygame setup
 p.init()
 side_width = 100
 screen = p.display.set_mode((st.WIDTH + side_width, st.HEIGHT))
@@ -412,8 +418,9 @@ while running:
         for button in difficulty_buttons:
             button.hide()
 
+
     if (game_stage == "win" or game_stage == "lose") and not written:
-        t.Thread(target=lambda: dw.write_data("http://localhost:8000/save_score", player_name, score), daemon = True).start()
+        t.Thread(target=write_data, daemon = True).start()
         written = True
 
     clock.tick(240)
